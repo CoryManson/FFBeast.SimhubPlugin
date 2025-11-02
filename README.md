@@ -4,8 +4,6 @@ A SimHub plugin that allows you to control your FFBeast wheelbase directly from 
 
 > **Note**: This plugin is designed specifically for the FFBeast direct drive wheelbase and requires the device to be connected via USB.
 
-[![Build and Release](https://github.com/CoryManson/FFBeast.SimhubPlugin/actions/workflows/build-and-release.yml/badge.svg)](https://github.com/CoryManson/FFBeast.SimhubPlugin/actions/workflows/build-and-release.yml)
-[![CI Build](https://github.com/CoryManson/FFBeast.SimhubPlugin/actions/workflows/ci.yml/badge.svg)](https://github.com/CoryManson/FFBeast.SimhubPlugin/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![.NET](https://img.shields.io/badge/.NET-Framework%204.8-purple.svg)](https://dotnet.microsoft.com/)
 [![SimHub](https://img.shields.io/badge/SimHub-Compatible-green.svg)](https://www.simhubdash.com/)
@@ -191,23 +189,33 @@ buffer[1] = COMMAND;                      // Command byte
 
 ### Creating a Release
 
-Releases are automatically built and published using GitHub Actions:
+To create a release for distribution:
 
-1. **Tag a new version**:
+1. **Build Release configuration**:
    ```powershell
-   git tag -a v1.0.0 -m "Release version 1.0.0"
-   git push origin v1.0.0
+   dotnet build FFBeast.SimHubPlugin.csproj -c Release
    ```
 
-2. **GitHub Actions will automatically**:
-   - Build the Release configuration
-   - Create a ZIP archive with all required DLLs
-   - Create a GitHub Release with the archive and release notes
-   - Attach individual DLL files for convenience
+2. **Package the files**:
+   ```powershell
+   # Create a release folder
+   New-Item -ItemType Directory -Force -Path release
+   
+   # Copy required files
+   Copy-Item "bin\Release\net48\FFBeast.SimHubPlugin.dll" release\
+   Copy-Item "bin\Release\net48\HidSharp.dll" release\
+   Copy-Item "README.md" release\
+   
+   # Create ZIP archive
+   Compress-Archive -Path release\* -DestinationPath FFBeast.SimHubPlugin-v1.0.0.zip
+   ```
 
-3. **Manual release** (if needed):
-   - Go to Actions → Build and Release → Run workflow
-   - Or create a release manually from the GitHub Releases page
+3. **Create GitHub Release**:
+   - Go to your repository on GitHub
+   - Click "Releases" → "Create a new release"
+   - Tag version (e.g., `v1.0.0`)
+   - Upload the ZIP file
+   - Add release notes
 
 ## Technical Details
 
