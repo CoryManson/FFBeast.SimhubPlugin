@@ -1,0 +1,35 @@
+name: CI Build
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    
+    strategy:
+      matrix:
+        configuration: [Debug, Release]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '9.0.x'
+        
+    - name: Restore dependencies
+      run: dotnet restore FFBeast.SimHubPlugin.csproj
+      
+    - name: Build ${{ matrix.configuration }}
+      run: dotnet build FFBeast.SimHubPlugin.csproj -c ${{ matrix.configuration }} --no-restore
+      
+    - name: List build output
+      run: |
+        Write-Host "Build output for ${{ matrix.configuration }}:"
+        Get-ChildItem -Path "bin/${{ matrix.configuration }}/net48" -Recurse | Select-Object Name, Length, LastWriteTime

@@ -1,0 +1,122 @@
+name: Build and Release
+
+on:
+  push:
+    branches: [ main ]
+    tags:
+      - 'v*'
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '9.0.x'
+        
+    - name: Restore dependencies
+      run: dotnet restore FFBeast.SimHubPlugin.csproj
+      
+    - name: Build Release
+      run: dotnet build FFBeast.SimHubPlugin.csproj -c Release --no-restore
+      
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: FFBeast-SimHub-Plugin
+        path: |
+          bin/Release/net48/FFBeast.SimHubPlugin.dll
+          bin/Release/net48/FFBeast.SimHubPlugin.pdb
+          bin/Release/net48/HidSharp.dll
+        if-no-files-found: error
+
+  release:
+    needs: build
+    runs-on: windows-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    
+    permissions:
+      contents: write
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Download build artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: FFBeast-SimHub-Plugin
+        path: release-files
+        
+    - name: Create Release Archive
+      run: |
+        Compress-Archive -Path release-files\* -DestinationPath FFBeast.SimHubPlugin-${{ github.ref_name }}.zip
+        
+    - name: Generate Release Notes
+      id: release_notes
+      run: |
+        $version = "${{ github.ref_name }}"
+        $notes = @"
+        ## FFBeast SimHub Plugin $version
+        
+        ### Installation
+        
+        1. Download ``FFBeast.SimHubPlugin-$version.zip``
+        2. Extract all files
+        3. Copy all DLL files to your SimHub installation directory:
+           - Default: ``C:\Program Files (x86)\SimHub\``
+        4. Restart SimHub
+        5. The plugin should appear in SimHub settings under **Additional Plugins**
+        
+        ### Files Included
+        
+        - ``FFBeast.SimHubPlugin.dll`` - Main plugin assembly
+        - ``FFBeast.SimHubPlugin.pdb`` - Debug symbols (optional)
+        - ``HidSharp.dll`` - HID communication library
+        
+        ### Features
+        
+        - Reset Center: Recalibrate wheelbase center position
+        - Reboot Controller: Restart the wheelbase controller
+        - Auto-reconnect: Automatically reconnects if connection is lost
+        - Settings UI with connection status and test buttons
+        
+        ### Requirements
+        
+        - Windows PC with SimHub installed
+        - FFBeast wheelbase connected via USB
+        - .NET Framework 4.8 (usually pre-installed on Windows 10/11)
+        
+        ### Quick Start
+        
+        1. Open SimHub → **Controls and Events** → **Custom Serial Controls**
+        2. Click **Add action**
+        3. Select ``FFBeast.ResetCenter`` or ``FFBeast.Reboot``
+        4. Map to your controller button
+        
+        For detailed documentation, see the [README](https://github.com/CoryManson/FFBeast.SimhubPlugin/blob/main/README.md).
+        "@
+        
+        # Output to file for GitHub release
+        $notes | Out-File -FilePath release-notes.md -Encoding utf8
+        
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v2
+      with:
+        files: |
+          FFBeast.SimHubPlugin-${{ github.ref_name }}.zip
+          release-files/*.dll
+        body_path: release-notes.md
+        draft: true
+        prerelease: false
+        generate_release_notes: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

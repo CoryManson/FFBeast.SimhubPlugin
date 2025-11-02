@@ -1,0 +1,51 @@
+<UserControl x:Class="FFBeast.SimHubPlugin.SettingsControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="500">
+    <StackPanel Margin="10">
+        <TextBlock Text="FFBeast Wheelbase Control" FontSize="16" FontWeight="Bold" Margin="0,0,0,10"/>
+        
+        <TextBlock TextWrapping="Wrap" Margin="0,0,0,10">
+            This plugin allows you to control your FFBeast wheelbase from SimHub.
+            Map controller buttons to the available actions in the Controls settings.
+        </TextBlock>
+        
+        <GroupBox Header="Connection Status" Margin="0,0,0,10">
+            <StackPanel Margin="5">
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
+                    <TextBlock Text="Status: " FontWeight="Bold" Width="80"/>
+                    <TextBlock x:Name="StatusText" Text="Unknown" />
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
+                    <TextBlock Text="Device: " FontWeight="Bold" Width="80"/>
+                    <TextBlock x:Name="DeviceText" Text="Not connected" />
+                </StackPanel>
+                <Button x:Name="ReconnectButton" Content="Reconnect" Width="100" HorizontalAlignment="Left" Margin="0,5,0,0" Click="ReconnectButton_Click"/>
+            </StackPanel>
+        </GroupBox>
+        
+        <GroupBox Header="Available Actions" Margin="0,0,0,10">
+            <StackPanel Margin="5">
+                <TextBlock Text="• FFBeast.ResetCenter - Reset wheelbase center position" Margin="0,2"/>
+                <TextBlock Text="• FFBeast.Reboot - Reboot wheelbase controller" Margin="0,2"/>
+            </StackPanel>
+        </GroupBox>
+        
+        <GroupBox Header="Quick Test" Margin="0,0,0,10">
+            <StackPanel Margin="5">
+                <Button x:Name="TestRecenterButton" Content="Test Recenter" Width="120" HorizontalAlignment="Left" Margin="0,0,0,5" Click="TestRecenterButton_Click"/>
+                <TextBlock Text="Test the recenter function" FontSize="10" Foreground="Gray" Margin="0,0,0,10"/>
+                <Button x:Name="TestRebootButton" Content="Test Reboot" Width="120" HorizontalAlignment="Left" Margin="0,0,0,5" Click="TestRebootButton_Click"/>
+                <TextBlock Text="Reboot the wheelbase (use with caution)" FontSize="10" Foreground="Gray"/>
+            </StackPanel>
+        </GroupBox>
+        
+        <TextBlock TextWrapping="Wrap" FontSize="10" Foreground="Gray">
+            To use: Go to Controls and Events → Controls → New Mapping → 
+            Press a button on your device and Select one of the FFBeast actions to bind to that button/key.
+        </TextBlock>
+    </StackPanel>
+</UserControl>
